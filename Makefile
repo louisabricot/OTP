@@ -4,13 +4,15 @@ TESTS = tests
 
 SRCS = srcs
 
+OTP_LOG = otp.log
+
 .PHONY: all
 all: install
 	pip install -e .
 
 .PHONY: clean
 clean: 
-	@echo "cleaning"
+	@/bin/rm -rf $(OTP_LOG)
 
 .PHONY: fclean
 fclean: clean
