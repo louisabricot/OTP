@@ -4,12 +4,19 @@ import sys
 import os
 import stat
 from cryptography.fernet import Fernet
-from hashlib import sha1
-import datetime
-
-
+import hashlib
+from datetime import datetime, timezone
+import hmac
+from math import floor
+import base64
 master_key_file = "ft_otp.key"
 
+
+#t0 = 0
+#X = interval_time (30s)
+#t = datetime.datetime.now() - t0 / X
+
+# totp = hotp(master_key, t)
 
 def generate_master_key(master_key: str):
     try:
@@ -35,13 +42,41 @@ def generate_ephemeral_key():
             password = input("Enter password:")
             fernet = Fernet(bytes(password, "utf-8"))
             master_key = fernet.decrypt(bytes(encrypted_key, "utf-8")).decode()
-            print("decrypted: ", master_key)
-        # Step 1: Generate an HMAC-SHA-1 value
-        now = datetime.datetime.now()
-        counter = int(now.timestamp())
-        hs = hmac.new(master_key, counter, sha1)
+            print(f"Hex secret: {master_key}")
+#        print(f"Digits: {digits}")
+
+        # Step 1: Generate an HMAC-SHA-256 value
+        t0 = 0
+        X = 30
+        print(f"Step size (seconds): {X}")
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        start_time = datetime.fromtimestamp(0)
+        print(f"Start time: {start_time} ({int(start_time.timestamp())})")
+        print(f"Current time: {now} ({int(now.timestamp())})")
+#        t = floor(( int(now.timestamp()) - int(start_time.timestamp())) / X) # use floor() ? 
+        t = floor( (1111111109 / 30)) # use floor() ? 
+        print(f"Counter: {hex(t).upper()} ({t})")
+#        hash = hmac.new(bytes(master_key, "utf-8"), msg=bytes(str(t), "utf-8"), digestmod=hashlib.sha256)
+        hash = hmac.new(bytes("12345678901234567890", "utf-8"), msg=t.to_bytes(8, 'big'), digestmod=hashlib.sha1)
+
+        print(hash.hexdigest())
+        hmac_hash = bytearray(hash.digest())
+
+        offset = hmac_hash[-1] & 0xF
+
+        code = (
+            (hmac_hash[offset] & 0x7F) << 24
+            | (hmac_hash[offset + 1] & 0xFF) << 16
+            | (hmac_hash[offset + 2] & 0xFF) << 8
+            | (hmac_hash[offset + 3] & 0xFF)
+        )
+        print(code)
+        #str_code = str(code % 10**6))
+        #print(str_code)
+        #print(str_code[-6 :])
 
         # Step 2: Generate a 4-byte string (Dynamic Truncation)
+
         # Step 3: Compute an HOTP value
         # snum = string to num
         # return snum % 10%(len(str(snum)))
