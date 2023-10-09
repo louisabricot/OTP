@@ -23,7 +23,7 @@ re: fclean all
     
 .PHONY: test
 test: 
-	pytest $(TESTS)
+	pytest $(TESTS)/*
 
 .PHONY: black
 black:
