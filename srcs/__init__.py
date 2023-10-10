@@ -1,1 +1,1 @@
-from .otp import generate
+from .otp import main

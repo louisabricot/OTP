@@ -10,7 +10,7 @@ version = "0.1.0"
 where = ["srcs"]
 
 [project.scripts]
-otp = "otp:generate"
+otp = "otp:main"
 
 [pytest]
 testpaths = "tests"
