@@ -103,8 +103,8 @@ def decrypt(encrypted: str) -> str:
         fernet = Fernet(bytes(password, "utf-8"))
         decrypted = fernet.decrypt(bytes(encrypted, "utf-8")).decode()
         return decrypted
-    except InvalidToken:
-        logging.error("Fernet raised an Invalid Token error")
+    except:
+        logging.error("Error occured during the decryption")
         sys.exit(-1)
 
 
@@ -248,10 +248,10 @@ def master_key_format(key: str) -> str:
         # Check if key is valid hexadecimal
         int(key, 16)
         keylen = len(key)
-        if keylen == 64:
+        if keylen >= 64:
             return key
         raise argparse.ArgumentTypeError(
-            f"Must be a 64 character hexadecimal. Actual len: {keylen}"
+            f"Must be at least 64 character hexadecimal. Actual len: {keylen}"
         )
     except ValueError as exc:
         raise argparse.ArgumentTypeError(f"Argument {key} must be hexadecimal") from exc
@@ -308,8 +308,6 @@ def main():
     logging.getLogger().addHandler(logging.StreamHandler())
 
     if args.master_key is not None:
-        if args.digits is not None:
-            print("Ignoring option --digits")
         generate_master_key(args.master_key)
     elif args.key is True:
         generate_ephemeral_key(args.verbose, args.digits)
